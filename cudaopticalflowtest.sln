@@ -1,0 +1,68 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.1.32319.34
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "cudaopticalflow", "cudaopticalflowtest\cudaopticalflowtest.vcxproj", "{3954DD9D-A16A-4533-BA34-5DAFFB771619}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpticalFlowCudaCV", "OpticalFlowCudaCV\OpticalFlowCudaCV.csproj", "{35EC8167-F156-4D34-81B2-91DCCF19DA19}"
+	ProjectSection(ProjectDependencies) = postProject
+		{3954DD9D-A16A-4533-BA34-5DAFFB771619} = {3954DD9D-A16A-4533-BA34-5DAFFB771619}
+	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpticalFlowCudaCVTests", "OpticalFlowCudaCVTests\OpticalFlowCudaCVTests.csproj", "{01A873C9-42CE-467B-BCCD-8FE25879AECF}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Debug|x64 = Debug|x64
+		Debug|x86 = Debug|x86
+		Release|Any CPU = Release|Any CPU
+		Release|x64 = Release|x64
+		Release|x86 = Release|x86
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{3954DD9D-A16A-4533-BA34-5DAFFB771619}.Debug|Any CPU.ActiveCfg = Debug|x64
+		{3954DD9D-A16A-4533-BA34-5DAFFB771619}.Debug|Any CPU.Build.0 = Debug|x64
+		{3954DD9D-A16A-4533-BA34-5DAFFB771619}.Debug|x64.ActiveCfg = Debug|x64
+		{3954DD9D-A16A-4533-BA34-5DAFFB771619}.Debug|x64.Build.0 = Debug|x64
+		{3954DD9D-A16A-4533-BA34-5DAFFB771619}.Debug|x86.ActiveCfg = Debug|Win32
+		{3954DD9D-A16A-4533-BA34-5DAFFB771619}.Debug|x86.Build.0 = Debug|Win32
+		{3954DD9D-A16A-4533-BA34-5DAFFB771619}.Release|Any CPU.ActiveCfg = Release|x64
+		{3954DD9D-A16A-4533-BA34-5DAFFB771619}.Release|Any CPU.Build.0 = Release|x64
+		{3954DD9D-A16A-4533-BA34-5DAFFB771619}.Release|x64.ActiveCfg = Release|x64
+		{3954DD9D-A16A-4533-BA34-5DAFFB771619}.Release|x64.Build.0 = Release|x64
+		{3954DD9D-A16A-4533-BA34-5DAFFB771619}.Release|x86.ActiveCfg = Release|Win32
+		{3954DD9D-A16A-4533-BA34-5DAFFB771619}.Release|x86.Build.0 = Release|Win32
+		{35EC8167-F156-4D34-81B2-91DCCF19DA19}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{35EC8167-F156-4D34-81B2-91DCCF19DA19}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{35EC8167-F156-4D34-81B2-91DCCF19DA19}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{35EC8167-F156-4D34-81B2-91DCCF19DA19}.Debug|x64.Build.0 = Debug|Any CPU
+		{35EC8167-F156-4D34-81B2-91DCCF19DA19}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{35EC8167-F156-4D34-81B2-91DCCF19DA19}.Debug|x86.Build.0 = Debug|Any CPU
+		{35EC8167-F156-4D34-81B2-91DCCF19DA19}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{35EC8167-F156-4D34-81B2-91DCCF19DA19}.Release|Any CPU.Build.0 = Release|Any CPU
+		{35EC8167-F156-4D34-81B2-91DCCF19DA19}.Release|x64.ActiveCfg = Release|Any CPU
+		{35EC8167-F156-4D34-81B2-91DCCF19DA19}.Release|x64.Build.0 = Release|Any CPU
+		{35EC8167-F156-4D34-81B2-91DCCF19DA19}.Release|x86.ActiveCfg = Release|Any CPU
+		{35EC8167-F156-4D34-81B2-91DCCF19DA19}.Release|x86.Build.0 = Release|Any CPU
+		{01A873C9-42CE-467B-BCCD-8FE25879AECF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{01A873C9-42CE-467B-BCCD-8FE25879AECF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{01A873C9-42CE-467B-BCCD-8FE25879AECF}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{01A873C9-42CE-467B-BCCD-8FE25879AECF}.Debug|x64.Build.0 = Debug|Any CPU
+		{01A873C9-42CE-467B-BCCD-8FE25879AECF}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{01A873C9-42CE-467B-BCCD-8FE25879AECF}.Debug|x86.Build.0 = Debug|Any CPU
+		{01A873C9-42CE-467B-BCCD-8FE25879AECF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{01A873C9-42CE-467B-BCCD-8FE25879AECF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{01A873C9-42CE-467B-BCCD-8FE25879AECF}.Release|x64.ActiveCfg = Release|Any CPU
+		{01A873C9-42CE-467B-BCCD-8FE25879AECF}.Release|x64.Build.0 = Release|Any CPU
+		{01A873C9-42CE-467B-BCCD-8FE25879AECF}.Release|x86.ActiveCfg = Release|Any CPU
+		{01A873C9-42CE-467B-BCCD-8FE25879AECF}.Release|x86.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {D2EBC73C-B367-4D34-8313-D9C63E0EBB64}
+	EndGlobalSection
+EndGlobal
