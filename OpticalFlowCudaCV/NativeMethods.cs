@@ -54,6 +54,8 @@ namespace OpticalFlowCudaCV
         public static extern void DenseOpticalFlowCalcFloat(IntPtr obj, IntPtr image1, IntPtr image2, out IntPtr map_vector, int w, int h);
         [Pure, DllImport(DllExtern, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
         public static extern void Remap(IntPtr map, IntPtr image,IntPtr imageMapped,int w,int h);
+        [Pure, DllImport(DllExtern, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        public static extern int CalcColorCorectionMatrix(IntPtr image, int w, int h, IntPtr imageDraw, out IntPtr ccm);
     }
 
 }

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -125,6 +126,26 @@ namespace OpticalFlowCudaCV
         public Mat(IntPtr ptr)
         {
             this.ptr = ptr;
+        }
+    }
+
+    public class ColorCorrection
+    {
+        public static int CalcColorCorectionMatrix(IntPtr image, int w, int h, IntPtr imageDraw, out double[] ccm)
+        {
+
+            int returnValue = NativeMethods.CalcColorCorectionMatrix(image, w, h, imageDraw, out var ccmPtr);
+            if(returnValue == 1)
+            {
+                ccm = new double[9];
+                Marshal.Copy(ccmPtr, ccm, 0, 9);
+            }
+            else
+            {
+                ccm = new double[9];
+            }
+            
+            return returnValue;
         }
     }
 }

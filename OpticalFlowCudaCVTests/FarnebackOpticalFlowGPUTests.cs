@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using OpenCvSharp;
 
 namespace OpticalFlowCudaCV.Tests
 {
@@ -12,11 +13,12 @@ namespace OpticalFlowCudaCV.Tests
     public class FarnebackOpticalFlowGPUTests
     {
         [TestMethod()]
-        public void CalcTest()
+        public void ColorCorrectionTest()
         {
-            var obj = new FarnebackOpticalFlowGPU();
-            //var result = obj.Calc(new byte[100 * 100], new byte[100 * 100], 100, 100);
-            //obj.Remap(result, new byte[100 * 100], new byte[100 * 100], 100, 100);
+            OpenCvSharp.Mat image = new OpenCvSharp.Mat("D:\\images\\colorChecker\\7.bmp");
+            var imageDraw = image.Clone();
+            ColorCorrection.CalcColorCorectionMatrix(image.Data,  image.Width, image.Height, imageDraw.Data, out double[] result);
+            Console.WriteLine(result);
         }
     }
 }

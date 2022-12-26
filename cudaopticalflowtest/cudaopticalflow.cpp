@@ -14,7 +14,10 @@
 #include "opencv2/cudaarithm.hpp"
 #include <omp.h>
 #include <chrono>
+#include <opencv2/mcc.hpp>
+#include "opencv2/mcc/ccm.hpp"
 
+using namespace cv::mcc;
 using namespace std;
 using namespace cv;
 using namespace cv::cuda;
@@ -171,40 +174,218 @@ extern "C" __declspec(dllexport) void Remap(Mat * map, uint8_t * image, uint8_t 
 //    }
 //    remap(mat1, UnwrappedMat, map, NULL, INTER_AREA);
 //}
-int main()
+//int main3()
+//{
+//
+//    
+//    //Mat frame1;
+//    Mat frame0 = cv::imread("C:\\src\\cudaopticalflow\\cudaopticalflowtest\\images\\1.png", cv::ImreadModes::IMREAD_GRAYSCALE);
+//    Mat frame1 = cv::imread("C:\\src\\cudaopticalflow\\cudaopticalflowtest\\images\\2.png", cv::ImreadModes::IMREAD_GRAYSCALE);
+//    Mat frame1Float;
+//    frame0.convertTo(frame0, CV_32FC1, 1 / 255.0);
+//    frame1.convertTo(frame1Float, CV_32FC1, 1 / 255.0);
+//    // https://funvision.blogspot.com
+//    //Ptr<cuda::FarnebackOpticalFlow> farn = cuda::FarnebackOpticalFlow::create(10,0.5,false,100,10,7,1.5);
+//    Ptr<cuda::BroxOpticalFlow> farn = cuda::BroxOpticalFlow::create(20,50,0.5,1,150,10);
+//    
+//    Mat flow;
+//    //Put Mat into GpuMat
+//    GpuMat GpuImg0(frame0);
+//    GpuMat GpuImg1(frame1Float);
+//    GpuMat gflow(frame0.size(), CV_32FC2);
+//    farn->calc(GpuImg0, GpuImg1, gflow);
+//    gflow.download(flow);
+//    Mat map(flow.size(), CV_32FC2);
+//    for (int y = 0; y < map.rows; ++y)
+//    {
+//        for (int x = 0; x < map.cols; ++x)
+//        {
+//            Point2f f = flow.at<Point2f>(y, x);
+//            map.at<Point2f>(y, x) = Point2f(x + f.x, y + f.y);
+//        }
+//    }
+//    Mat imageMappedMat(frame0.size(), CV_8UC1);
+//    remap(frame1, imageMappedMat, map, cv::Mat(), INTER_AREA);
+//    cv::imwrite("C:\\src\\cudaopticalflow\\cudaopticalflowtest\\images\\3.png",imageMappedMat);
+//    
+//}
+static Mat getColorCheckerMASK(const uchar* checker, int row)
 {
-
-    
-    //Mat frame1;
-    Mat frame0 = cv::imread("C:\\src\\cudaopticalflow\\cudaopticalflowtest\\images\\1.png", cv::ImreadModes::IMREAD_GRAYSCALE);
-    Mat frame1 = cv::imread("C:\\src\\cudaopticalflow\\cudaopticalflowtest\\images\\2.png", cv::ImreadModes::IMREAD_GRAYSCALE);
-    Mat frame1Float;
-    frame0.convertTo(frame0, CV_32FC1, 1 / 255.0);
-    frame1.convertTo(frame1Float, CV_32FC1, 1 / 255.0);
-    // https://funvision.blogspot.com
-    //Ptr<cuda::FarnebackOpticalFlow> farn = cuda::FarnebackOpticalFlow::create(10,0.5,false,100,10,7,1.5);
-    Ptr<cuda::BroxOpticalFlow> farn = cuda::BroxOpticalFlow::create(20,50,0.5,1,150,10);
-    
-    Mat flow;
-    //Put Mat into GpuMat
-    GpuMat GpuImg0(frame0);
-    GpuMat GpuImg1(frame1Float);
-    GpuMat gflow(frame0.size(), CV_32FC2);
-    farn->calc(GpuImg0, GpuImg1, gflow);
-    gflow.download(flow);
-    Mat map(flow.size(), CV_32FC2);
-    for (int y = 0; y < map.rows; ++y)
+    Mat res(row, 1, CV_8U);
+    for (int i = 0; i < row; ++i)
     {
-        for (int x = 0; x < map.cols; ++x)
+        res.at<uchar>(i, 0) = checker[i];
+    }
+    return res;
+}
+
+static Mat getColorChecker(const double* checker, int row)
+{
+    Mat res(row, 1, CV_64FC3);
+    for (int i = 0; i < row; ++i)
+    {
+        res.at<Vec3d>(i, 0) = Vec3d(checker[3 * i], checker[3 * i + 1], checker[3 * i + 2]);
+    }
+    return res;
+}
+static const double ColorChecker2005_LAB_D50_2[24][3] = { 
+        { 115, 82, 68},
+        { 194, 150, 130 },
+        { 98, 122, 157 },
+        {87, 108, 67 },
+        { 133, 128,177},
+        { 103, 189, 170 },
+        { 214, 126, 44 },
+        { 80, 91, 166 },
+        { 193, 90, 99 },
+        { 94 ,60, 108  },
+        { 157, 188 ,64 },
+        { 224 ,163, 46},
+        { 56 ,61,150 },
+        { 70, 148, 73 },
+        { 175 ,54, 60 },
+        { 231 ,199 ,31 },
+        { 187 ,86, 149 },
+        { 8 ,133 ,161 },
+        { 243 ,243 ,242 },
+        { 200 ,200, 200 },
+        { 160 ,160 ,160 },
+        { 122 ,122, 121 },
+        { 85, 85 ,85 },
+        { 52, 52 ,52} };
+static const uchar ColorChecker2005_COLORED_MASK[24] = { 1, 1, 1, 1, 1, 1,
+        1, 1, 1, 1, 1, 1,
+        1, 1, 1, 1, 1, 1,
+        0, 0, 0, 0, 0, 0 };
+
+static Mat getCheckColor() {
+    Mat a = Mat(24, 3, CV_64FC1);
+    std::memcpy(a.data, ColorChecker2005_LAB_D50_2, 24 * 3 * sizeof(double));
+    return a;
+}
+extern "C" __declspec(dllexport) int CalcColorCorectionMatrix(uint8_t * image, int32_t w, int32_t h, uint8_t * imageDraw, double_t * *ccm)
+{
+    TYPECHART chartType = TYPECHART(0);
+    Mat imagemat(h, w, CV_8UC3, image);
+    Mat imagedraw(h, w, CV_8UC3, imageDraw);
+    Ptr<CCheckerDetector> detector = CCheckerDetector::create();
+    if (!detector->process(imagemat, chartType, 1))
+    {
+        return 0;
+    }
+    std::vector<Ptr<mcc::CChecker>> checkers = detector->getListColorChecker();
+    if (checkers.size() > 0) {
+        auto checker = checkers.front();
+        Ptr<CCheckerDraw> cdraw = CCheckerDraw::create(checker);
+        cdraw->draw(imagedraw);
+        Mat chartsRGB = checker->getChartsRGB();
+        Mat src = chartsRGB.col(1).clone().reshape(1, chartsRGB.rows / 3);
+        src /= 255.0;
+        Mat trgFloat = getCheckColor() / 255.0;
+        cv::Mat ccm1;
+        cv::solve(src, trgFloat, ccm1, DECOMP_SVD);
+        *ccm = ccm1.ptr<double_t>(0);
+        return 1;
+    }
+    return 0;
+}
+int main() {
+    TYPECHART chartType = TYPECHART(0);
+    Mat image = cv::imread("D:\\images\\colorChecker\\7.bmp", cv::ImreadModes::IMREAD_COLOR);
+    cv::imwrite("D:\\images\\colorChecker\\11.bmp", image);
+    //Mat imageRotated;
+    //cv::rotate(image, imageRotated, ROTATE_180);
+    //image = imageRotated;
+    Ptr<CCheckerDetector> detector = CCheckerDetector::create();
+    if (!detector->process(image, chartType, 1))
+    {
+        printf("ChartColor not detected \n");
+    }
+    else
+    {
+
+        // get checker
+        std::vector<Ptr<mcc::CChecker>> checkers = detector->getListColorChecker();
+
+        for (Ptr<mcc::CChecker> checker : checkers)
         {
-            Point2f f = flow.at<Point2f>(y, x);
-            map.at<Point2f>(y, x) = Point2f(x + f.x, y + f.y);
+            // current checker
+            Ptr<CCheckerDraw> cdraw = CCheckerDraw::create(checker);
+            cdraw->draw(image);
+            Mat chartsRGB = checker->getChartsRGB();
+            Mat src = chartsRGB.col(1).clone().reshape(1, chartsRGB.rows / 3);
+            
+            src /= 255.0;
+
+            Mat src1 = chartsRGB.col(1).clone().reshape(3, chartsRGB.rows / 3);
+
+            src1 /= 255.0;
+            Mat trgFloat = getCheckColor()/255.0;
+            cv::Mat ccm1;
+            std::cout << "src " << src << std::endl;
+            std::cout << "trg " << trgFloat << std::endl;
+            cv::solve(src,trgFloat , ccm1, DECOMP_SVD);
+            //cv::Mat ccm1 = (trgFloat.t() * trgFloat).inv() * trgFloat.t()*src;
+            std::cout << "ccm1 " << ccm1 << std::endl;
+            cv::ccm::ColorCorrectionModel model1(src1, cv::ccm::CONST_COLOR::COLORCHECKER_Macbeth);
+            model1.setCCM_TYPE(cv::ccm::CCM_3x3);
+            model1.setColorSpace(cv::ccm::COLOR_SPACE_sRGB);
+            //model1.setLinear()
+            //model1.setLinear(cv::ccm::LINEARIZATION_IDENTITY);
+            model1.run();
+            Mat ccm = model1.getCCM();
+            std::cout << "total " << ccm.type() << std::endl;
+            for (int i = 0; i < ccm.rows;i++) {
+                double sumRow = ccm.at<double>(Point(0, i))+ ccm.at<double>(Point(1, i))+ ccm.at<double>(Point(2, i));
+                std::cout << "total " << sumRow << std::endl;
+                for (int j = 0; j < ccm.cols; j++) {
+                    //ccm.at<double>(Point(j, i)) = ccm.at<double>(Point(j, i)) / sumRow;
+                }
+            }
+            
+            std::cout << "ccm " << ccm << std::endl;
+            auto loss = model1.getWeights();
+            std::cout << "loss " << loss << std::endl;
+
+            Mat img_;
+            cv::cvtColor(image, img_, COLOR_BGR2RGB);
+            //cv::cvtColor(image, cieImage, COLOR_BGR2Lab);
+            img_.convertTo(img_, CV_64F);
+            const int inp_size = 255;
+            const int out_size = 255;
+            img_ = img_ / inp_size;
+            cv::Mat cam1Reshaped = img_.reshape(1, img_.size().height * img_.size().width);
+            //Mat calibratedImage = model1.infer(img_);
+            Mat calibratedImage = cam1Reshaped * ccm1.reshape(0, 3);
+            calibratedImage = calibratedImage.reshape(3, img_.size().height);
+           
+           /*Mat calibratedImage = Mat(img_.rows, img_.cols, CV_64FC3);
+            for (int i = 0; i < calibratedImage.rows; i++) {
+
+
+                for (int j = 0; j < calibratedImage.cols; j++) {
+                    cv::Vec<double, 3> bgrPixel = calibratedImage.at<cv::Vec<double, 3>>(i, j);
+                    bgrPixel[0] = (ccm * bgrPixel).a.at<Vec<double, 3>>(0)[0];
+                    bgrPixel[1] = (ccm * bgrPixel).a.at<Vec<double, 3>>(0)[1];
+                    bgrPixel[2] = (ccm * bgrPixel).a.at<Vec<double, 3>>(0)[2];
+                }
+            }*/
+
+            Mat out_ = calibratedImage * out_size;
+
+            out_.convertTo(out_, CV_8UC3);
+            Mat img_out = min(max(out_, 0), out_size);
+            Mat out_img;
+            cv::cvtColor(img_out, out_img, COLOR_RGB2BGR);
+            imshow("image calibrated", out_img);
         }
     }
-    Mat imageMappedMat(frame0.size(), CV_8UC1);
-    remap(frame1, imageMappedMat, map, cv::Mat(), INTER_AREA);
-    cv::imwrite("C:\\src\\cudaopticalflow\\cudaopticalflowtest\\images\\3.png",imageMappedMat);
+    imshow("image result | q or esc to quit", image);
+    imshow("original", image);
     
+    char key = (char)waitKey(-1);
+    if (key == 27)
+        return 0;
 }
 int main2()
 {
@@ -271,3 +452,4 @@ int main2()
         }
     }
 }
+
