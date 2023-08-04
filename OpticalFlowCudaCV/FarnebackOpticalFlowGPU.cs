@@ -147,5 +147,10 @@ namespace OpticalFlowCudaCV
             
             return returnValue;
         }
+        public static void ApplyCCM(IntPtr image, int w, int h, double[] ccm, IntPtr imageOut)
+        {
+            int returnValue = NativeMethods.ApplyCCM(image, w, h, ccm, imageOut);
+
+        }
     }
 }

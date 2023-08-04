@@ -289,6 +289,30 @@ extern "C" __declspec(dllexport) int CalcColorCorectionMatrix(uint8_t * image, i
     }
     return 0;
 }
+extern "C" __declspec(dllexport) int ApplyCCM(uint8_t * image, int32_t w, int32_t h, double_t * ccm , uint8_t  * image_out)
+{
+    Mat img_;
+    Mat imagemat(h, w, CV_8UC3, image);
+    Mat imageoutMat(h, w, CV_8UC3, image_out);
+    Mat ccm1(3, 3, CV_64F, ccm);
+    cv::cvtColor(imagemat, img_, COLOR_BGR2RGB);
+    //cv::cvtColor(image, cieImage, COLOR_BGR2Lab);
+    img_.convertTo(img_, CV_64F);
+    const int inp_size = 255;
+    const int out_size = 255;
+    img_ = img_ / inp_size;
+    cv::Mat cam1Reshaped = img_.reshape(1, img_.size().height * img_.size().width);
+    //Mat calibratedImage = model1.infer(img_);
+    Mat calibratedImage = cam1Reshaped * ccm1.reshape(0, 3);
+    calibratedImage = calibratedImage.reshape(3, img_.size().height);
+    Mat out_ = calibratedImage * out_size;
+
+    out_.convertTo(out_, CV_8UC3);
+    Mat img_out = min(max(out_, 0), out_size);
+    Mat img_out_rgb;
+    cv::cvtColor(img_out, imageoutMat, COLOR_RGB2BGR);
+    return 1;
+}
 int main() {
     TYPECHART chartType = TYPECHART(0);
     Mat image = cv::imread("D:\\images\\colorChecker\\7.bmp", cv::ImreadModes::IMREAD_COLOR);
